@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Face Recognition</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+    <style>
+        #video {
+            width: 640px;
+            height: 480px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h2>Face Recognition in Browser</h2>
+    <video id="video" autoplay muted></video>
+
+    <script>
+        async function setupCamera() {
+            const video = document.getElementById('video');
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+
+            // Load face-api models
+            await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+            await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+            await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+
+            video.addEventListener('play', () => {
+                const displaySize = { width: video.width, height: video.height };
+                faceapi.matchDimensions(video, displaySize);
+
+                setInterval(async () => {
+                    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                        .withFaceLandmarks().withFaceDescriptors();
+
+                    // Optional: Send recognized face data to the server
+                    detections.forEach(detection => {
+                        const faceData = detection.descriptor;
+                        sendToServer(faceData); // send recognized face data to server
+                    });
+                }, 100); // Adjust interval for performance
+            });
+        }
+
+        async function sendToServer(faceData) {
+            await fetch('/process_face_data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ faceData })
+            });
+        }
+
+        setupCamera();
+    </script>
+</body>
+</html>

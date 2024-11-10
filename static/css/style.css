@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Caveat:wght@400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+*
+{
+    padding: 0;
+    margin: 0;
+    font-family: "Montserrat", sans-serif;;
+}
+body{
+    text-align: center;
+    background-color: rgb(220, 220, 220);
+}
+.cont{
+    display:flexbox;
+    position:relative;
+}
+#video{
+    border: black 1px solid;
+    
+}
+h1{
+    margin-top: 100px;
+}
+button{
+    background-color: rgb(153, 153, 153);
+    padding: 10px;
+    
+}
+button:hover{
+    background-color: whitesmoke;
+}
+button:active:after{
+    background-color: rgb(0, 0, 0);
+}
+
