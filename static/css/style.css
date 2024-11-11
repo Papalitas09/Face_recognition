@@ -10,14 +10,19 @@ body{
     text-align: center;
     background-color: rgb(220, 220, 220);
 }
-.cont{
-    display:flexbox;
-    position:relative;
-}
-#video{
-    border: black 1px solid;
-    
-}
+.cont {
+    position: relative;
+    width: 640px; /* Sesuaikan dengan lebar yang diinginkan */
+    height: 480px; /* Sesuaikan dengan tinggi yang diinginkan */
+  }
+  
+  #video, #overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;  /* Pastikan mengisi seluruh lebar container */
+    height: 100%; /* Pastikan mengisi seluruh tinggi container */
+  }
 h1{
     margin-top: 100px;
 }

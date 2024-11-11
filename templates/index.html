@@ -11,130 +11,15 @@
   </head>
   <body>
     <h1>Real-Time Face Recognition</h1>
-
-    <form action="" onsubmit="SaveData(event)">
+    <form action="" onsubmit="SaveData()">
       <div class="cont">
         <video id="video" width="640" height="480" autoplay></video>
         <canvas id="overlay" width="640" height="480"></canvas>
       </div>
-
       <input type="text" id="Username" placeholder="Enter your name" required />
       <input type="submit" value="Save Data" />
     </form>
-    <div id="resultText">No recognized faces.</div>
 
-    <script>
-      const video = document.getElementById("video");
-      const overlay = document.getElementById("overlay");
-      const context = overlay.getContext("2d");
-      const resultText = document.getElementById("resultText");
-      let isProcessing = false;
-
-      // Access the user's camera
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
-          video.srcObject = stream;
-        })
-        .catch((error) => {
-          console.error("Error accessing camera:", error);
-        });
-
-      // Draw bounding boxes on the overlay canvas
-      function drawResults(results) {
-        context.clearRect(0, 0, overlay.width, overlay.height);
-        let detectedNames = [];
-        results.forEach((result) => {
-          const { name, location } = result;
-          const { top, right, bottom, left } = location;
-
-          // Draw rectangle
-          context.strokeStyle = "#00FF00";
-          context.lineWidth = 2;
-          context.strokeRect(left, top, right - left, bottom - top);
-
-          // Draw name
-          context.fillStyle = "#00FF00";
-          context.font = "16px Arial";
-          context.fillText(name, left + 5, top - 10);
-
-          if (name !== "Unknown") {
-            detectedNames.push(name);
-          }
-        });
-        resultText.textContent =
-          detectedNames.length > 0
-            ? `Detected: ${detectedNames.join(", ")}`
-            : "No recognized faces.";
-      }
-
-      video.addEventListener("loadedmetadata", () => {
-        overlay.width = video.videoWidth;
-        overlay.height = video.videoHeight;
-      });
-
-      function processFrame() {
-        if (isProcessing) return;
-        isProcessing = true;
-
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const imageData = canvas.toDataURL("image/png").replace(/data:image\/png;base64,/, "");
-
-        fetch("/process_image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: imageData }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            drawResults(data.results);
-            isProcessing = false;
-          })
-          .catch((error) => {
-            console.error("Error processing frame:", error);
-            isProcessing = false;
-          });
-      }
-
-      function SaveData(event) {
-        event.preventDefault(); // Prevent form from submitting
-
-        const Username = document.getElementById("Username").value;
-
-        if (!Username) {
-          alert("Please enter a name.");
-          return;
-        }
-
-        const canvas = document.getElementById("overlay");
-        const context = canvas.getContext("2d");
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        canvas.toBlob((blob) => {
-          const formData = new FormData();
-          formData.append("image", blob, `${Username}.png`);
-          formData.append("username", Username);
-
-          fetch("/upload_data", {
-            method: "POST",
-            body: formData,
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              console.log("Image saved:", data);
-            })
-            .catch((error) => {
-              console.error("Error uploading image:", error);
-            });
-        }, "image/png");
-      }
-
-      setInterval(processFrame, 200);
-    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   </body>
 </html>

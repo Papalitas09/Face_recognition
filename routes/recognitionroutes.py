@@ -26,7 +26,6 @@ for filename in os.listdir(known_faces_dir):
 def index():
     return render_template('index.html')
 
-
 @recognition_bp.route('/upload_data', methods=['POST'])
 def upload_data():
     if 'image' not in request.files or 'username' not in request.form:
@@ -40,7 +39,6 @@ def upload_data():
     
     image.save(filepath)
     return jsonify({'message': 'Image saved', 'filename': filename}), 200
-
 
 @recognition_bp.route('/process_image', methods=['POST'])
 def process_image():
@@ -104,3 +102,8 @@ def process_image():
 #         filename = f"{base_name}_{counter}{extension}"
 
 #     return jsonify({'filename': filename})
+
+
+#Notes :
+#1. optimize
+#2 Atur uniqe name
