@@ -8,12 +8,11 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
-    <style></style>
   </head>
   <body>
     <h1>Real-Time Face Recognition</h1>
 
-    <form action="" onsubmit="SaveData()">
+    <form action="" onsubmit="SaveData(event)">
       <div class="cont">
         <video id="video" width="640" height="480" autoplay></video>
         <canvas id="overlay" width="640" height="480"></canvas>
@@ -22,11 +21,13 @@
       <input type="text" id="Username" placeholder="Enter your name" required />
       <input type="submit" value="Save Data" />
     </form>
+    <div id="resultText">No recognized faces.</div>
 
     <script>
       const video = document.getElementById("video");
       const overlay = document.getElementById("overlay");
       const context = overlay.getContext("2d");
+      const resultText = document.getElementById("resultText");
       let isProcessing = false;
 
       // Access the user's camera
@@ -39,24 +40,32 @@
           console.error("Error accessing camera:", error);
         });
 
+      // Draw bounding boxes on the overlay canvas
       function drawResults(results) {
-        // Clear previous drawings
         context.clearRect(0, 0, overlay.width, overlay.height);
-
+        let detectedNames = [];
         results.forEach((result) => {
           const { name, location } = result;
           const { top, right, bottom, left } = location;
 
-          // Draw rectangle around detected face
+          // Draw rectangle
           context.strokeStyle = "#00FF00";
           context.lineWidth = 2;
           context.strokeRect(left, top, right - left, bottom - top);
 
-          // Draw name above the rectangle
+          // Draw name
           context.fillStyle = "#00FF00";
           context.font = "16px Arial";
           context.fillText(name, left + 5, top - 10);
+
+          if (name !== "Unknown") {
+            detectedNames.push(name);
+          }
         });
+        resultText.textContent =
+          detectedNames.length > 0
+            ? `Detected: ${detectedNames.join(", ")}`
+            : "No recognized faces.";
       }
 
       video.addEventListener("loadedmetadata", () => {
@@ -68,19 +77,14 @@
         if (isProcessing) return;
         isProcessing = true;
 
-        // Draw the current video frame to a canvas
         const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Convert the canvas to a base64 image and remove the header
-        const imageData = canvas
-          .toDataURL("image/png")
-          .replace(/^data:image\/png;base64,/, "");
+        const imageData = canvas.toDataURL("image/png").replace(/data:image\/png;base64,/, "");
 
-        // Send the frame to the server
         fetch("/process_image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -97,14 +101,17 @@
           });
       }
 
-      function SaveData() {
-        let Username = document.getElementById("Username").value;
+      function SaveData(event) {
+        event.preventDefault(); // Prevent form from submitting
+
+        const Username = document.getElementById("Username").value;
 
         if (!Username) {
           alert("Please enter a name.");
           return;
         }
 
+        const canvas = document.getElementById("overlay");
         const context = canvas.getContext("2d");
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
@@ -126,7 +133,7 @@
             });
         }, "image/png");
       }
-      // Run processFrame every 100 ms (1 second)
+
       setInterval(processFrame, 200);
     </script>
   </body>
