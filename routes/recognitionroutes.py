@@ -47,7 +47,7 @@ def process_image():
         data = request.json.get('image')
         if not data:
             return jsonify({'error': 'No image data provided'}), 400
-# dhadoshpdiajdoasda
+# dhadoshpdiajdoasda __
         # Decode the base64 image
         image_data = base64.b64decode(data)
         np_img = np.frombuffer(image_data, np.uint8)

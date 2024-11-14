@@ -10,14 +10,18 @@
     />
   </head>
   <body>
-    <h1>Real-Time Face Recognition</h1>
+
+    <header></header>
+
     <form action="" onsubmit="SaveData()">
       <div class="cont">
         <video id="video" width="640" height="480" autoplay></video>
         <canvas id="overlay" width="640" height="480"></canvas>
       </div>
-      <input type="text" id="Username" placeholder="Enter your name" required />
-      <input type="submit" value="Save Data" />
+      <div class="input_capture">
+        <input type="text" id="Username" placeholder="Enter your name" required />
+        <input type="submit" value="Save Data" />
+      </div>
     </form>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
