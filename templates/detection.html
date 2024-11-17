@@ -33,23 +33,28 @@
         }
 
         .input_capture {
-            left: 60rem;
+            display: block;
             z-index: 100;
             position: relative;
+            width: 10rem;
+            height: 10rem;
         }
+    
+
+      
     </style>
 </head>
-<body>
-    <form action="" onsubmit="SaveData()" class="form"> 
+<body> 
+
         <video id="video" autoplay muted></video>
         <canvas id="canvas"></canvas>
         <div id="output"></div>
         <button onclick="nextRoutes()">here</button>
-      <div class="input_capture">
-        <input type="text" id="Username" placeholder="Enter your name" required />
-        <input type="submit" value="Save Data"  />
-      </div> 
-    </form> 
+        <div class="input_capture">
+            <input type="text" id="Username" placeholder="Enter your name" required />
+            <button type="button" id="captureBtn">Capture</button>
+        </div>        
+
 
     <script src="{{ url_for('static', filename='js/detection.js') }}"></script>
 </body>

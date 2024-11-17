@@ -52,6 +52,40 @@ def face_detection():
 
     return jsonify({"faces": face_positions})
 
+#####################################################################################################################################
+
+@recognition_bp.route('/save_image', methods=['POST'])
+def save_image():
+    try:
+        # Ambil data dari request
+        data = request.json
+        image_data = data.get("image")
+        username = data.get("name")
+
+        if not image_data or not username:
+            return jsonify({"success": False, "error": "Missing image or name"}), 400
+
+        # Decode base64 menjadi array numpy
+        image_data = base64.b64decode(image_data.split(",")[1])
+        nparr = np.frombuffer(image_data, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if img is None:
+            return jsonify({"success": False, "error": "Failed to decode image"}), 400
+
+        # Buat nama file unik
+        filename = generate_unique_filename(known_faces_dir, username, ".jpg")
+        filepath = os.path.join(known_faces_dir, filename)
+
+        # Simpan gambar
+        cv2.imwrite(filepath, img)
+
+        return jsonify({"success": True, "message": f"Image saved as {filename}"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+######################################################################################################################################
 
 def generate_unique_filename(directory, base_name, extension):
     counter = 0
@@ -60,25 +94,6 @@ def generate_unique_filename(directory, base_name, extension):
         counter += 1
         filename = f"{base_name}_{counter}{extension}"
     return filename
-
-@recognition_bp.route('/upload_data', methods=['POST'])
-def upload_data():
-    if 'image' not in request.files or 'username' not in request.form:
-        return jsonify({'error': 'No image or username provided'}), 400
-
-    image = request.files['image']
-    username = request.form['username']
-    base_name = username
-    extension = ".png"
-
-    # Generate unique filename
-    filename = generate_unique_filename(known_faces_dir, base_name, extension)
-    filepath = os.path.join(known_faces_dir, filename)
-
-    image.save(filepath)
-    print(f"Image saved at: {filepath}")
-    return jsonify({'message': 'Image saved', 'filename': filename}), 200
-
 
 @recognition_bp.route('/recognition')
 def recognition():
@@ -133,4 +148,23 @@ def process_image():
 
 #Notes :
 #1. optimize
+
+# @recognition_bp.route('/upload_data', methods=['POST'])
+# def upload_data():
+#     if 'image' not in request.files or 'username' not in request.form:
+#         return jsonify({'error': 'No image or username provided'}), 400
+
+#     image = request.files['image']
+#     username = request.form['username']
+#     base_name = username
+#     extension = ".png"
+
+#     # Generate unique filename
+#     filename = generate_unique_filename(known_faces_dir, base_name, extension)
+#     filepath = os.path.join(known_faces_dir, filename)
+
+#     image.save(filepath)
+#     print(f"Image saved at: {filepath}")
+#     return jsonify({'message': 'Image saved', 'filename': filename}), 200
+
 #2 Atur uniqe name

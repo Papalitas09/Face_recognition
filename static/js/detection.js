@@ -50,45 +50,6 @@ function drawFrame() {
 }
 
 
-function SaveData() {
-  const Username = document.getElementById("Username").value;
-
-  if (!Username.trim()) {
-    alert("Please enter a valid name.");
-    return;
-  }
-
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  canvas.toBlob((blob) => {
-    if (!blob) {
-      alert("Failed to capture the image.");
-      return;
-    }
-
-    const formData = new FormData();
-    const timestamp = Date.now(); // Tambahkan timestamp
-    const filename = `${Username}_${timestamp}.png`; // Nama file unik
-    formData.append("image", blob, filename);
-    formData.append("username", Username);
-
-    fetch("/upload_data", {
-        method: "POST",
-        body: formData,
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        alert("Data saved successfully: " + data.filename);
-    })
-    .catch((error) => {
-        console.error("Error:", error);
-        alert("Failed to save data.");
-    });
-    
-  }, "image/png");
-}
-
 // Fungsi untuk mendeteksi wajah
 function detectFaces() {
   isProcessing = true;
@@ -126,3 +87,79 @@ function detectFaces() {
 function nextRoutes(){
     window.location.href = '/recognition'
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+document.getElementById("captureBtn").addEventListener("click", () => {
+  const username = document.getElementById("Username").value.trim();
+
+  if (!username) {
+      alert("Please enter your name!");
+      return;
+  }
+
+  // Ambil frame saat ini dari video
+  const imageData = canvas.toDataURL("image/jpeg");
+
+  // Kirim data gambar dan nama ke backend
+  fetch("/save_image", {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ image: imageData, name: username }),
+  })
+      .then((response) => response.json())
+      .then((data) => {
+          if (data.success) {
+              alert("Image saved successfully!");
+          } else {
+              alert("Failed to save image. Error: " + data.error);
+          }
+      })
+      .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred while saving the image.");
+      });
+});
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  // function SaveData() {
+  //   const Username = document.getElementById("Username").value;
+  
+  //   if (!Username.trim()) {
+  //     alert("Please enter a valid name.");
+  //     return;
+  //   }
+  
+  //   const ctx = canvas.getContext("2d");
+  //   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  //   canvas.toBlob((blob) => {
+  //     if (!blob) {
+  //       alert("Failed to capture the image.");
+  //       return;
+  //     }
+  
+  //     const formData = new FormData();
+  //     const timestamp = Date.now(); // Tambahkan timestamp
+  //     const filename = `${Username}_${timestamp}.png`; // Nama file unik
+  //     formData.append("image", blob, filename);
+  //     formData.append("username", Username);
+  
+  //     fetch("/upload_data", {
+  //         method: "POST",
+  //         body: formData,
+  //     })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //         alert("Data saved successfully: " + data.filename);
+  //     })
+  //     .catch((error) => {
+  //         console.error("Error:", error);
+  //         alert("Failed to save data.");
+  //     });
+      
+  //   }, "image/png");
+  // }
