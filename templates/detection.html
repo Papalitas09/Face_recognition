@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Detection</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        video, canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        canvas {
+            z-index: 2; /* Letakkan canvas di atas video */
+        }
+        #output {
+            position: fixed;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            width: 100%;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            position: relative;
+            left: 50rem;
+        }
+
+        .input_capture {
+            left: 60rem;
+            z-index: 100;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <form action="" onsubmit="SaveData()" class="form"> 
+        <video id="video" autoplay muted></video>
+        <canvas id="canvas"></canvas>
+        <div id="output"></div>
+        <button onclick="nextRoutes()">here</button>
+      <div class="input_capture">
+        <input type="text" id="Username" placeholder="Enter your name" required />
+        <input type="submit" value="Save Data"  />
+      </div> 
+    </form> 
+
+    <script src="{{ url_for('static', filename='js/detection.js') }}"></script>
+</body>
+</html>

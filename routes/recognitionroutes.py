@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, g
+from flask import Blueprint, render_template, request, jsonify
 import face_recognition
 import numpy as np
 import cv2
@@ -10,6 +10,7 @@ recognition_bp = Blueprint('recognition', __name__)
 known_faces_dir = 'facedata'
 known_faces_encodings = []
 known_faces_names = []
+
 
 # Load known faces
 if not os.path.exists(known_faces_dir):
@@ -24,30 +25,74 @@ for filename in os.listdir(known_faces_dir):
 
 @recognition_bp.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('detection.html')
+
+
+@recognition_bp.route('/detection', methods=['POST'])  # Endpoint untuk deteksi wajah
+def face_detection():
+    # Decode base64 string menjadi gambar
+    data = request.json.get("image")
+    if data is None:
+        return jsonify({"error": "No image provided"}), 400
+    
+    # Decode base64 menjadi numpy array
+    image_data = base64.b64decode(data.split(",")[1])  # Mengabaikan header base64
+    nparr = np.frombuffer(image_data, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    
+    # Konversi ke grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Muat model Haar Cascade
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+    # Kirim posisi wajah yang terdeteksi
+    face_positions = [{"x": int(x), "y": int(y), "w": int(w), "h": int(h)} for (x, y, w, h) in faces]
+
+    return jsonify({"faces": face_positions})
+
+
+def generate_unique_filename(directory, base_name, extension):
+    counter = 0
+    filename = f"{base_name}{extension}"
+    while os.path.exists(os.path.join(directory, filename)):
+        counter += 1
+        filename = f"{base_name}_{counter}{extension}"
+    return filename
 
 @recognition_bp.route('/upload_data', methods=['POST'])
 def upload_data():
     if 'image' not in request.files or 'username' not in request.form:
         return jsonify({'error': 'No image or username provided'}), 400
-    
-    # Get image and username from the request
+
     image = request.files['image']
     username = request.form['username']
-    filename = f"{username}.png"
+    base_name = username
+    extension = ".png"
+
+    # Generate unique filename
+    filename = generate_unique_filename(known_faces_dir, base_name, extension)
     filepath = os.path.join(known_faces_dir, filename)
-    
+
     image.save(filepath)
+    print(f"Image saved at: {filepath}")
     return jsonify({'message': 'Image saved', 'filename': filename}), 200
 
-@recognition_bp.route('/process_image', methods=['POST'])
+
+@recognition_bp.route('/recognition')
+def recognition():
+    anjay = True
+    return render_template('recognition.html')
+
+@recognition_bp.route('/recognition/process_image', methods=['POST'])
 def process_image():
     try:
         # Get the base64 image data from the request
         data = request.json.get('image')
         if not data:
             return jsonify({'error': 'No image data provided'}), 400
-# dhadoshpdiajdoasda __
+
         # Decode the base64 image
         image_data = base64.b64decode(data)
         np_img = np.frombuffer(image_data, np.uint8)
@@ -69,7 +114,7 @@ def process_image():
             distances = face_recognition.face_distance(known_faces_encodings, face_encoding)
             best_match_index = np.argmin(distances) if distances.size > 0 else None
             name = "Unknown"
-            if best_match_index is not None and distances[best_match_index] < 0.65:
+            if best_match_index is not None and distances[best_match_index] < 0.55:
                 name = known_faces_names[best_match_index]
 
             # Append name and location of the detected face
@@ -84,24 +129,6 @@ def process_image():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-# @recognition_bp.route('/uniqe_names')
-# def generate_unique_filename(directory, extension):
-#     # Pastikan g.u_name sudah di-set sebelumnya
-#     if not hasattr(g, 'u_name'):
-#         return jsonify({'error': 'User name not set'}), 400
-    
-#     # Menggunakan g.u_name yang diset sebelumnya di /submit_name
-#     base_name = g.u_name
-#     counter = 0
-#     filename = f"{base_name}{extension}"
-
-#     # Periksa apakah file sudah ada, dan jika ada, tambahkan angka unik ke nama file
-#     while os.path.exists(os.path.join(directory, filename)):
-#         counter += 1
-#         filename = f"{base_name}_{counter}{extension}"
-
-#     return jsonify({'filename': filename})
 
 
 #Notes :
