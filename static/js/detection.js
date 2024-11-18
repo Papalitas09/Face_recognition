@@ -1,5 +1,6 @@
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
+const canvas1 = document.getElementById("canvas1");
 const output = document.getElementById("output");
 const context = canvas.getContext("2d");
 
@@ -57,6 +58,7 @@ function detectFaces() {
   // Ambil data gambar dari canvas sebagai base64
   const imageData = canvas.toDataURL("image/jpeg");
 
+
   // Kirim ke backend untuk deteksi wajah
   fetch("/detection", {
     method: "POST",
@@ -97,8 +99,19 @@ document.getElementById("captureBtn").addEventListener("click", () => {
       return;
   }
 
-  // Ambil frame saat ini dari video
-  const imageData = canvas.toDataURL("image/jpeg");
+  // Dapatkan konteks canvas1
+  const context1 = canvas1.getContext("2d");
+
+  // Sesuaikan ukuran canvas1 dengan video
+  canvas1.width = video.videoWidth;
+  canvas1.height = video.videoHeight;
+
+  // Gambar ulang video pada canvas1 tanpa rectangle
+  context1.clearRect(0, 0, canvas1.width, canvas1.height);
+  context1.drawImage(video, 0, 0, canvas1.width, canvas1.height);
+
+  // Ambil data gambar dari canvas1
+  const imageData = canvas1.toDataURL("image/jpeg");
 
   // Kirim data gambar dan nama ke backend
   fetch("/save_image", {
@@ -112,6 +125,8 @@ document.getElementById("captureBtn").addEventListener("click", () => {
       .then((data) => {
           if (data.success) {
               alert("Image saved successfully!");
+              window.location.href = '/recognition'
+              
           } else {
               alert("Failed to save image. Error: " + data.error);
           }
@@ -121,6 +136,8 @@ document.getElementById("captureBtn").addEventListener("click", () => {
           alert("An error occurred while saving the image.");
       });
 });
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

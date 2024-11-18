@@ -15,9 +15,14 @@
             left: 0;
             z-index: 1;
         }
-        canvas {
+        .canvas {
             z-index: 2; /* Letakkan canvas di atas video */
         }
+        
+        .canvas1{
+            display: none;
+        }
+
         #output {
             position: fixed;
             bottom: 0;
@@ -48,6 +53,7 @@
 
         <video id="video" autoplay muted></video>
         <canvas id="canvas"></canvas>
+        <canvas id="canvas1"></canvas>
         <div id="output"></div>
         <button onclick="nextRoutes()">here</button>
         <div class="input_capture">
