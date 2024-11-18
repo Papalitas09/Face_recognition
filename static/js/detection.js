@@ -3,11 +3,13 @@ const canvas = document.getElementById("canvas");
 const canvas1 = document.getElementById("canvas1");
 const output = document.getElementById("output");
 const context = canvas.getContext("2d");
+const countdown = document.getElementById("countdown");
 
 let lastDetectionTime = 0; // Waktu terakhir deteksi wajah
 const detectionInterval = 1000; // Interval deteksi (ms)
 let isProcessing = false; // Cegah overlap proses
 let cachedFaces = []; // Cache untuk menyimpan hasil deteksi wajah
+
 
 // Akses kamera
 navigator.mediaDevices
@@ -50,14 +52,14 @@ function drawFrame() {
   requestAnimationFrame(drawFrame); // Loop
 }
 
+let time = 5; // Waktu countdown
+let detected = false; // Awalnya belum ada wajah terdeteksi
 
-// Fungsi untuk mendeteksi wajah
 function detectFaces() {
   isProcessing = true;
 
   // Ambil data gambar dari canvas sebagai base64
   const imageData = canvas.toDataURL("image/jpeg");
-
 
   // Kirim ke backend untuk deteksi wajah
   fetch("/detection", {
@@ -69,13 +71,15 @@ function detectFaces() {
   })
     .then((response) => response.json())
     .then((data) => {
-      // Update cache dengan hasil deteksi baru
       if (data.faces && data.faces.length > 0) {
         cachedFaces = data.faces;
         output.innerText = `${data.faces.length} wajah terdeteksi.`;
+        detected = true; // Set detected ke true
+        startCountdown(); // Mulai countdown ketika wajah terdeteksi
       } else {
         cachedFaces = []; // Kosongkan cache jika tidak ada wajah
         output.innerText = "Tidak ada wajah terdeteksi.";
+        detected = false; // Tidak ada deteksi
       }
     })
     .catch((error) => {
@@ -86,13 +90,43 @@ function detectFaces() {
     });
 }
 
-function nextRoutes(){
-    window.location.href = '/recognition'
+let funcRun = false
+// Fungsi untuk memulai countdown
+function startCountdown() {
+  const timer = setInterval(() => {
+    console.log(time); // Menampilkan angka di console
+    countdown.textContent = time; // Menampilkan angka di halaman
+    if (time-- <= 0) {
+      clearInterval(timer); // Hentikan timer saat selesai
+      countdown.textContent = "Time's up!";
+      if (funcRun == false){
+        SaveData()
+        funcRun = true
+      // Pindah ke halaman berikutnya
+      } else {
+        onlyOnce()
+      }
+    }
+  }, 1000);
+}
+
+function onlyOnce(){
+  setTimeout(() => {
+    funcRun = false
+  }, 5000);
+}
+
+
+// Fungsi untuk mengarahkan ke halaman berikutnya
+function nextRoutes() {
+  window.location.href = '/recognition';
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-document.getElementById("captureBtn").addEventListener("click", () => {
+
+function SaveData() {
   const username = document.getElementById("Username").value.trim();
+  let done_detection = true
 
   if (!username) {
       alert("Please enter your name!");
@@ -119,7 +153,7 @@ document.getElementById("captureBtn").addEventListener("click", () => {
       headers: {
           "Content-Type": "application/json",
       },
-      body: JSON.stringify({ image: imageData, name: username }),
+      body: JSON.stringify({ image: imageData, name: username, kelar: done_detection }),
   })
       .then((response) => response.json())
       .then((data) => {
@@ -135,7 +169,7 @@ document.getElementById("captureBtn").addEventListener("click", () => {
           console.error("Error:", error);
           alert("An error occurred while saving the image.");
       });
-});
+}
 
 
 

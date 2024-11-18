@@ -97,7 +97,6 @@ def generate_unique_filename(directory, base_name, extension):
 
 @recognition_bp.route('/recognition')
 def recognition():
-    anjay = True
     return render_template('recognition.html')
 
 @recognition_bp.route('/recognition/process_image', methods=['POST'])
@@ -129,7 +128,7 @@ def process_image():
             distances = face_recognition.face_distance(known_faces_encodings, face_encoding)
             best_match_index = np.argmin(distances) if distances.size > 0 else None
             name = "Unknown"
-            if best_match_index is not None and distances[best_match_index] < 0.55:
+            if best_match_index is not None and distances[best_match_index] < 0.50:
                 name = known_faces_names[best_match_index]
 
             # Append name and location of the detected face
