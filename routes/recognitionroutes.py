@@ -80,9 +80,21 @@ def save_image():
         # Simpan gambar
         cv2.imwrite(filepath, img)
 
-        return jsonify({"success": True, "message": f"Image saved as {filename}"})
+        # Memuat encoding wajah baru
+        new_image = face_recognition.load_image_file(filepath)
+        face_encodings = face_recognition.face_encodings(new_image)
+
+        # Tambahkan ke daftar encoding dan nama jika encoding ditemukan
+        if face_encodings:
+            known_faces_encodings.append(face_encodings[0])
+            known_faces_names.append(username)
+            return jsonify({"success": True, "message": f"Image saved as {filename}, and face encoding updated."})
+        else:
+            return jsonify({"success": False, "error": "No face detected in the saved image."}), 400
+
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+    
 
 
 ######################################################################################################################################

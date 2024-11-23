@@ -113,7 +113,7 @@ function startCountdown() {
 function onlyOnce(){
   setTimeout(() => {
     funcRun = false
-  }, 5000);
+  }, 10000);
 }
 
 
@@ -123,10 +123,8 @@ function nextRoutes() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 function SaveData() {
   const username = document.getElementById("Username").value.trim();
-  let done_detection = true
 
   if (!username) {
       alert("Please enter your name!");
@@ -153,14 +151,13 @@ function SaveData() {
       headers: {
           "Content-Type": "application/json",
       },
-      body: JSON.stringify({ image: imageData, name: username, kelar: done_detection }),
+      body: JSON.stringify({ image: imageData, name: username }),
   })
       .then((response) => response.json())
       .then((data) => {
           if (data.success) {
-              alert("Image saved successfully!");
-              window.location.href = '/recognition'
-              
+              alert("Image saved and face encoding updated successfully!");
+              window.location.href = '/recognition'; // Pindah ke halaman pengenalan wajah
           } else {
               alert("Failed to save image. Error: " + data.error);
           }
@@ -170,6 +167,7 @@ function SaveData() {
           alert("An error occurred while saving the image.");
       });
 }
+
 
 
 
